@@ -10,7 +10,6 @@ import { HardhatUserConfig } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { getNamedSigners } from "hardhat-deploy-ethers/dist/src/helpers";
 
-
 require("dotenv").config();
 
 const toBool = (a: string) => a == "true" ? true : false
@@ -25,9 +24,8 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 });
 
 task("status", "Prints address and balance of deployer", async (args, hre: HardhatRuntimeEnvironment) => {
-	let { deployer} = await getNamedSigners(hre);
+	let { deployer } = await getNamedSigners(hre);
 	console.log(`Deployer at ${deployer.address} has balance of: ${hre.ethers.utils.formatEther(await deployer.getBalance())}`);
-
 });
 
 let mnemonic = process.env.MNEMONIC ? process.env.MNEMONIC : 'test test test test test test test test test test test junk';
@@ -81,12 +79,13 @@ const config: HardhatUserConfig = {
 	},
 	networks: {
 		hardhat: {
+			chainId: 1337,
 			accounts: custom_accounts,
 			throwOnCallFailures: false,
 			throwOnTransactionFailures: true, // Useful to estimate wrong root cost
 			forking: {
 				enabled: toBool(process.env.FORKING_ENABLED),
-				url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+				url: process.env.NODEURL, //process.env.INFURA,
 			},
 			live: false,
 			saveDeployments: true,
@@ -94,7 +93,7 @@ const config: HardhatUserConfig = {
 		},
 		mainnet: {
 			accounts: custom_accounts,
-			url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+			url: process.env.NODEURL, //process.env.INFURA,
 			live: true,
 			saveDeployments: true,
 			tags: ["live"]

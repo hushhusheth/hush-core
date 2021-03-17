@@ -49,7 +49,6 @@ export async function generateMultiDepositProof(_commits, _tree: MerkleTree, was
     return { proof: proof, signals: publicSignals, solidityProof: solidityProof };
 }
 
-
 export async function generateWithdrawProof(_note: Note, _receiver, _fee, _tree: MerkleTree, wasm: string, zkey: string) {
     let withdrawPath = _tree.getPath(_note.index).map(p => p.toString(10));
     let receiver = BigNumber.from(_receiver).toString();

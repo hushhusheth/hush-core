@@ -16,7 +16,7 @@ describe("Permit token", function () {
         await token.deployed();
 
         let name = await token.name();
-        let chainId = 31337;
+        let chainId = 1337;
         expect(await token.DOMAIN_SEPARATOR()).to.equal(getDomainSeparator(name, token.address, chainId));
         expect(await token.PERMIT_TYPEHASH()).to.equal(PERMIT_TYPEHASH);
     });
@@ -46,7 +46,7 @@ describe("Permit token", function () {
         let deadline = 100000000000000;
         let nonce = await token.nonces(await user.getAddress());
         let name = await token.name();
-        let chainId = 31337;
+        let chainId = 1337;
 
         expect(await token.DOMAIN_SEPARATOR()).to.equal(getDomainSeparator(name, token.address, chainId));
         expect(await token.PERMIT_TYPEHASH()).to.equal(PERMIT_TYPEHASH);

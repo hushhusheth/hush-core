@@ -17,6 +17,14 @@ contract HushFactory is Ownable, IHushFactory {
     uint256 public override feeSize;
     address public override feeCollector;
 
+    uint256 public constant override updateDelay = 7 days;
+    uint256 public constant override gracePeriod = 1 days;
+    uint256 public override proposalInit;
+
+    address public override proposedDepositVerifier;
+    address public override proposedMultiDepositVerifier; 
+    address public override proposedWithdrawVerifier;
+
     address public override depositVerifier;
     address public override multiDepositVerifier;
     address public override withdrawVerifier;
@@ -27,16 +35,6 @@ contract HushFactory is Ownable, IHushFactory {
 
     mapping(address => mapping(uint256 => address)) erc20Pools;
 
-    event CreatedPool(address _token, uint256 _depositAmount, address _pool);
-    event RetirePool(address _token, uint256 _depositAmount, address _pool);
-    event UpdatedFeeSize(uint256 _feeSize);
-    event UpdatedFeeCollector(address _collector);
-    event UpdatedVerifiers(
-        address _depositVerifier,
-        address _multiDepositVerifier,
-        address _withdrawVerifier
-    );
-
     constructor(uint256 _emptyTree, uint256 _treeDepth) public {
         emptyTree = _emptyTree;
         require(_treeDepth < 32, "Factory: tree depth must be below 32");
@@ -45,7 +43,7 @@ contract HushFactory is Ownable, IHushFactory {
         feeSize = 0;
     }
 
-    modifier definedVerifies() {
+    modifier definedVerifiers() {
         require(
             depositVerifier != address(0),
             "Factory: undefined deposit verifier"
@@ -73,9 +71,26 @@ contract HushFactory is Ownable, IHushFactory {
         emit UpdatedFeeCollector(_collector);
     }
 
-    function ossify() public override onlyOwner() definedVerifies() {
+    function ossify() public override onlyOwner() definedVerifiers() {
         require(!ossified, "Factory: already ossified");
         ossified = true;
+    }
+
+    function queueVerifierUpdate(
+        address _depositVerifier,
+        address _multiDepositVerifier,
+        address _withdrawVerifier
+    ) public override onlyOwner() definedVerifiers() {
+        require(!ossified, "Factory: verifiers ossified");
+        proposalInit = now;
+        proposedDepositVerifier = _depositVerifier;
+        proposedMultiDepositVerifier = _multiDepositVerifier;
+        proposedWithdrawVerifier = _withdrawVerifier;
+        emit ProposeUpdateVerifier(
+            proposedDepositVerifier,
+            proposedMultiDepositVerifier,
+            proposedWithdrawVerifier
+        );
     }
 
     function setVerifiers(
@@ -84,6 +99,21 @@ contract HushFactory is Ownable, IHushFactory {
         address _withdrawVerifier
     ) public override onlyOwner() {
         require(!ossified, "Factory: verifiers ossified");
+        bool isInitial =
+            depositVerifier == address(0) &&
+                multiDepositVerifier == address(0) &&
+                withdrawVerifier == address(0);
+        bool matchesQueued =
+            _depositVerifier == proposedWithdrawVerifier &&
+                _multiDepositVerifier == proposedMultiDepositVerifier &&
+                _withdrawVerifier == proposedWithdrawVerifier;
+        bool satisfiesTime =
+            (now > proposalInit + updateDelay) &&
+                (now < proposalInit + updateDelay + gracePeriod);
+        require(
+            isInitial || (matchesQueued && satisfiesTime),
+            "Factory: verifiers not matching criterias"
+        );
         depositVerifier = _depositVerifier;
         multiDepositVerifier = _multiDepositVerifier;
         withdrawVerifier = _withdrawVerifier;
@@ -97,7 +127,7 @@ contract HushFactory is Ownable, IHushFactory {
     function genesis(address _token, uint256 _depositAmount)
         public
         override
-        definedVerifies()
+        definedVerifiers()
         onlyOwner()
         returns (address pool)
     {
@@ -120,7 +150,7 @@ contract HushFactory is Ownable, IHushFactory {
     function deployERCPool(address _token, uint256 _depositAmount)
         public
         override
-        definedVerifies()
+        definedVerifiers()
         onlyOwner()
         returns (address pool)
     {

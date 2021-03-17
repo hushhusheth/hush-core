@@ -7,5 +7,6 @@ artifacts
 zkproofs/pot
 
 deployments
+abis
 
 .env

@@ -1,5 +1,4 @@
 import { poseidonHash2, zero_value } from "./utils";
-import { toBN } from 'web3-utils';
 
 class MerkleTree {
     zeroLeaf: any;
@@ -13,6 +12,7 @@ class MerkleTree {
         this.zeroLeaf = zeroLeaf;
         this.zeroValues = [zeroLeaf];
         this.totalElements = 0;
+        this.layers = [];
 
         let currZero = this.zeroLeaf;
         for (let i = 1; i < depth; i++) {
@@ -24,7 +24,7 @@ class MerkleTree {
     }
 
     get root() {
-        if (this.layers.length == 0) {
+        if (this.layers.length === 0) {
             return undefined;
         }
         return this.layers[this.depth][0];
@@ -60,7 +60,7 @@ class MerkleTree {
      * @returns {int} index The index at which the leaf was inserted.
      */
     insertUpdateTree(leaf, forceInsert = false) {
-        if (leaf == zero_value && !forceInsert) {
+        if (leaf === zero_value && !forceInsert) {
             return this.totalElements;
         }
         let index = this.totalElements++;
@@ -74,7 +74,7 @@ class MerkleTree {
 
         for (let i = 0; i < this.depth; i++) {
             this.layers[i][currentIndex] = curr;
-            if (currentIndex % 2 == 0) {
+            if (currentIndex % 2 === 0) {
                 left = curr;
                 right = this.zeroValues[i];
             } else {
@@ -91,31 +91,31 @@ class MerkleTree {
 
     // This needs to take account that the tree is not actually filled.
     // Should use 
-    getPath(index) {
+    getPath(index:number) {
         if (index >= this.totalElements) {
             //return Error("Index out of bounds, index >= totalElements");
         }
 
-        let path = [];
+        let path:any[] = [];
 
         let currIndex = index;
         let currVal = this.layers[0][index];
-        if (currVal == undefined) {
+        if (currVal === undefined) {
             currVal = this.zeroLeaf;
         }
 
         for (let i = 0; i < this.depth; i++) {
-            if (currIndex % 2 == 0) { // Im left
+            if (currIndex % 2 === 0) { // Im left
                 let left = currVal;
                 let right = this.layers[i][currIndex + 1]
-                if (right == undefined) {
+                if (right === undefined) {
                     right = this.zeroValues[i];
                 }
                 path.push(right);
                 currVal = poseidonHash2(left, right);
             } else {
                 let left = this.layers[i][currIndex - 1]
-                if (left == undefined) {
+                if (left === undefined) {
                     left = this.zeroValues[i];
                 }
                 let right = currVal;
@@ -125,7 +125,7 @@ class MerkleTree {
             currIndex >>= 1;
         }
 
-        if (this.root - currVal != 0) {
+        if (this.root - currVal !== 0) {
             console.log("Roots not matching");
         }
 

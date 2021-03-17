@@ -1,5 +1,5 @@
 import { babyJub, pedersenHash, poseidon } from 'circomlib';
-import { toBN, soliditySha3 } from 'web3-utils';
+import { toBN } from 'web3-utils';
 
 const utils = require("ffjavascript").utils;
 
