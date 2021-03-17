@@ -66,7 +66,7 @@ In the midst of the Hush Hush system is the HushPool factory, a contract that ac
 
 Before handing over the keys to the castle, a ceremony is required to update the verifies to ensure that neither the Hush Hush team nor any other party can compromise the security of the system. When the verifiers have been updated, the contract will be ossified, meaning that it will become impossible to update the verifiers again.  
 
-# the trusted setup
+# The trusted setup
 
 To generate the keys for our circuits, we have used the [Perpatual Powers of Tau](https://github.com/weijiekoh/perpetualpowersoftau/) Phase 1 as Base. More specifically we used `powersOfTau28_hez_final_17.ptau` with from [Dropbox](https://www.dropbox.com/sh/mn47gnepqu88mzl/AACaJkBU7mmCq8uU8ml0-0fma?dl=0) which is introduced in the description of [snarkjs](https://github.com/iden3/snarkjs).  
 
@@ -114,12 +114,16 @@ As we are to support multiple aTokens, there is a Wrapped aToken Factory, which 
 
 The Hush Pools are a relatively small contract, which allows the user to deposit and withdraw. It is deployed as a minimal proxy of a genesis pool to make it cheaper to deploy additional pools.
 
-# CLI - proof generation
+# CLI - proof generation - WIP
 
 To make it as easily available for the average user, we support proof generation on the web application. However, for those who prefer to generate the proofs themselves, we provide a minimal CLI which can be used to generate the proofs without using the website. It requires a RPC as it will retrieve events to compute the current tree which is used in the proofs.
 
 
 
+# Exporting ABI's for frontend
 
-
+```bash
 npx hardhat export-artifacts --include CEther,IHush,IHushFactory,IERC20Detailed ./abis  
+```
+
+
