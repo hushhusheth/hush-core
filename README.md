@@ -58,7 +58,7 @@ To withdraw, the user will use the *secret* from his deposit, and the deposits *
 
 The overall architecture is somewhat like the following image (simplified), there is a Factory which point to the verifies and keep a registry of existing pools and generate new ones. The pool itself will then have a deposit root stored in the contract, and every leaf as input data to in transactions, and retrievable through events as well. The greyed out nodes are only computed inside the proof, and never sees the blockchain itself, note that there is many more layers than in the drawing, 20 in total.  
 
-**![HushFactory](/Users/lasseherskind/Downloads/HushFactory.svg)**
+**![HushFactory](./images/HushFactory.svg)**
 
 # Governance - updating verifiers, adding pools and controlling fees
 
@@ -84,7 +84,7 @@ To run the set of test that does not require the fork, disable forking and run
 npx hardhat test test/controller-test.ts test/erc20permit-test.ts  test/hush-test.ts test/merkle-test.ts test/prover_verifier-test.ts test/rebuild-merkle-test.ts
 ```
 
-![image-20210314094310470](/Users/lasseherskind/GitHub/hush-core/images/no-fork-gas.png)
+![No fork gas](./images/no-fork-gas.png)
 
 ## Fork
 
@@ -94,7 +94,7 @@ To run the set of test that requires forking, enable fork and run:
 npx hardhat test test/busstation-test.ts test/full-launch-test.ts test/watoken-test.ts test/zap-test.ts
 ```
 
-![image-20210314094823424](/Users/lasseherskind/GitHub/hush-core/images/fork-gas.png)
+![Fork gas](./images/fork-gas.png)
 
 ## Simulation
 
