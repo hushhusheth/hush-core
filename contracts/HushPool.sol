@@ -24,9 +24,6 @@ abstract contract HushPool is ProofUtil, IHushPool {
     uint256[ROOT_HISTORY_SIZE] public roots;
     mapping(uint256 => bool) public  override nullifiers;
 
-    event Deposit(uint256 _commitment, uint256 _index);
-    event Withdraw(uint256 _nullifier, address _receiver, uint256 _fee);
-
     constructor() public {}
 
     /**

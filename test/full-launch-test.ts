@@ -34,7 +34,7 @@ describe("Complete scenario", () => {
 
     // Settings
     let depth = 20;
-    let protocolFee: number = 50;
+    let protocolFee = BigNumber.from(0);
     let depositAmount = "1";
 
     let lendingPool: Contract;
@@ -104,6 +104,8 @@ describe("Complete scenario", () => {
 
         // get CEther
         await cEth.connect(user).mint({ value: _depositAmount });
+
+        protocolFee = await poolFactory.feeSize();
 
         await poolFactory.connect(deployer).setFeeCollector(feeCollector.address);
     });

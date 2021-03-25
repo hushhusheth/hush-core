@@ -2,13 +2,16 @@
 pragma solidity 0.6.12;
 
 interface IHushPool {
-    function leafCount() external returns (uint256);
+    event Deposit(uint256 _commitment, uint256 _index);
+    event Withdraw(uint256 _nullifier, address _receiver, uint256 _fee);
 
-    function treesize() external returns (uint256);
+    function leafCount() external view returns (uint256);
+
+    function treesize() external view returns (uint256);
 
     function ZEROLEAF() external view returns (uint256);
 
-    function nullifiers(uint256) external returns (bool);
+    function nullifiers(uint256) external view returns (bool);
 
     function factory() external view returns(address);
 

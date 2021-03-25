@@ -606,7 +606,12 @@ describe("Hush Controller", function () {
 			expect(await factory.withdrawVerifier()).to.equal(withdrawVerifier.address);
 		});
 
-		it("update verifier TODO", async () => {
+		it("update verifier", async () => {
+			// Initially set the verifiers
+			expect(await factory.depositVerifier()).to.equal(toFixedHex(0, 20));
+			expect(await factory.multiDepositVerifier()).to.equal(toFixedHex(0, 20));
+			expect(await factory.withdrawVerifier()).to.equal(toFixedHex(0, 20));
+
 			let setVerifierTX = await factory.populateTransaction.setVerifiers(depositVerifier.address, multiDepositVerifier.address, withdrawVerifier.address);
 
 			let salt = toFixedHex(randomBN(31), 32);
@@ -614,6 +619,10 @@ describe("Hush Controller", function () {
 			let value = 0;
 			await controller.connect(proposer).schedule(setVerifierTX.to, value, setVerifierTX.data, predecessor, salt, 0);
 			await controller.connect(executor).execute(setVerifierTX.to, value, setVerifierTX.data, predecessor, salt);
+			expect(await factory.depositVerifier()).to.equal(depositVerifier.address);
+			expect(await factory.multiDepositVerifier()).to.equal(multiDepositVerifier.address);
+			expect(await factory.withdrawVerifier()).to.equal(withdrawVerifier.address);
+			// Verifiers are now set.
 
 			// Replay verifier
 			salt = toFixedHex(randomBN(31), 32);

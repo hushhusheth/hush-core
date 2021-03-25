@@ -32,7 +32,7 @@ describe("Bus Station", function () {
     let poolFactory: Contract;
 
     let depositAmount: BigNumber;
-    let feeSize = BigNumber.from(50);
+    let feeSize = BigNumber.from(0);
 
     beforeEach(async function () {
         await deployments.fixture("MorePools");
@@ -41,6 +41,8 @@ describe("Bus Station", function () {
 
         const poolFactoryAddress = (await deployments.get("PoolFactory")).address;
         poolFactory = await ethers.getContractAt("HushFactory", poolFactoryAddress);
+
+        feeSize = await poolFactory.feeSize();
     });
 
 

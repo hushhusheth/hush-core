@@ -18,8 +18,6 @@ contract ERCHushPool is HushPool, IERCHushPool {
 
     uint256 public collectedFees;
 
-    event CollectedFees(address _collector, uint256 _collected);
-
     function initialize(address _token, uint256 _depositAmount)
         public
         override

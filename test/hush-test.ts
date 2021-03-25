@@ -101,7 +101,7 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 		expect(await hush.getLastRoot()).to.equal(tree.root.toString());
 		expect(await hush.leafCount()).to.equal(0);
 	});
-/*
+
 	describe("Factory", () => {
 		it("check init", async () => {
 			expect(await factory.owner()).to.equal(deployer.address);
@@ -183,7 +183,6 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 			);
 		});
 
-
 		it("ossify", async () => {
 			let zero_address = toFixedHex(0, 20);
 
@@ -229,11 +228,23 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 
 			await factory.retirePool(token.address, depositAmount);
 
+			// Deploy new pool on top of the old
 			await factory.deployERCPool(token.address, depositAmount);
 			expect(await factory.getERCPool(token.address, depositAmount)).to.not.equal(oldAddr);
 
+			// Deploy 10x pool
+			await factory.deployERCPool(token.address, depositAmount.mul(10));
+			const oldAddr10X = await factory.getERCPool(token.address, depositAmount.mul(10));
+			expect(oldAddr10X).to.not.equal(toFixedHex(0, 20));
+
+			// Retire 10x pool
+			await factory.retirePool(token.address, depositAmount.mul(10));
+			expect(await factory.getERCPool(token.address, depositAmount.mul(10))).to.equal(toFixedHex(0, 20));
+
+			// Deploy 10x pool
 			await factory.deployERCPool(token.address, depositAmount.mul(10));
 			expect(await factory.getERCPool(token.address, depositAmount.mul(10))).to.not.equal(toFixedHex(0, 20));
+			expect(await factory.getERCPool(token.address, depositAmount.mul(10))).to.not.equal(oldAddr10X);
 		});
 	});
 
@@ -396,6 +407,7 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 					tree.init();
 					let deposits = [true, true, true, true, true, true, true, true];
 					deposits[i] = false;
+
 					let commits = deposits.map((b) => {
 						return b ? new Note(token.address, depositAmount).commitment : zero_value;
 					});
@@ -404,6 +416,7 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 						tree,
 						files["MultiDeposit"]["wasm"],
 						files["MultiDeposit"]["zkey"],
+						true,
 						true
 					);
 
@@ -851,7 +864,7 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 			await hush.connect(collector).collectFees();
 			expect(await token.balanceOf(collector.address)).to.equal(expectedFee);
 		});
-	});*/
+	});
 
 	describe("Bad verifiers", () => {
 		it("mock verifier - always true", async () => {
@@ -860,7 +873,7 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 			await mock.deployed();
 
 			await factory.queueVerifierUpdate(mock.address, mock.address, mock.address);
-			await increaseTime(deployer, 60*60*24*7 + 600);
+			await increaseTime(deployer, 60 * 60 * 24 * 7 + 600);
 			await factory.setVerifiers(mock.address, mock.address, mock.address);
 
 			let note = new Note(token.address, depositAmount);
@@ -918,7 +931,7 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 			let oldRoot = tree.root.toString();
 
 			await factory.queueVerifierUpdate(pause.address, pause.address, pause.address);
-			await increaseTime(deployer, 60*60*24*7 + 600);
+			await increaseTime(deployer, 60 * 60 * 24 * 7 + 600);
 			await factory.setVerifiers(pause.address, pause.address, pause.address);
 
 			// Try to withdraw the funds
@@ -959,7 +972,7 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 			await cheat.deployed();
 
 			await factory.queueVerifierUpdate(cheat.address, cheat.address, cheat.address);
-			await increaseTime(deployer, 60*60*24*7 + 600);
+			await increaseTime(deployer, 60 * 60 * 24 * 7 + 600);
 			await factory.setVerifiers(cheat.address, cheat.address, cheat.address);
 
 			let note = new Note(token.address, depositAmount);
@@ -994,6 +1007,61 @@ describe("Hush Hush anonymity pools with fresh ERC20", () => {
 
 			await hush.connect(user2).withdraw(withdrawProof, withdrawSig);
 			expect(await token.balanceOf(receiver.address)).to.equal(depositAmount.sub(relayerFee).mul(2));
+		});
+	});
+
+	describe("Fill tree", () => {
+		it("overfill tree, depth = 5", async () => {
+			let depth = 5;
+			let expectedTreeSize = Math.pow(2, depth);
+
+			// Create mock verifier. For easy testing
+			const MockVerifier = await ethers.getContractFactory("MockVerifier");
+			const mock = await MockVerifier.deploy();
+			await mock.deployed();
+
+			// Create small tree
+			let tree = new MerkleTree(depth, zero_value);
+			tree.init();
+
+			const ERC20 = await ethers.getContractFactory("ERC20Tester");
+			let token = await ERC20.deploy(100000);
+			await token.deployed();
+
+			const HushFactory = await ethers.getContractFactory("HushFactory");
+			let factory = await HushFactory.deploy(tree.root.toString(), depth);
+			await factory.deployed();
+
+			// Set mock as verifier
+			await factory.setVerifiers(mock.address, mock.address, mock.address);
+
+			// Create genesis
+			await factory.genesis(token.address, 1000);
+
+			let hushAddress = await factory.getERCPool(token.address, 1000);
+			let hush = await ethers.getContractAt("ERCHushPool", hushAddress);
+
+			let treesize = await hush.treesize();
+			console.log("TreeSize: ", treesize);
+
+			await token.approve(hush.address, depositAmount.mul(2));
+
+			for (let i = 0; i < expectedTreeSize + 1; i++) {
+				let note = new Note(token.address, depositAmount);
+				let oldRoot = tree.root.toString();
+
+				// Make random deposit proof
+				let depositProof = [1, 1, 1, 1, 1, 1, 1, 1];
+				let depositSig = [oldRoot, oldRoot, i, note.commitment.toString()];
+
+				// Deposit
+
+				if (i < expectedTreeSize) {
+					await hush.deposit(depositProof, depositSig);
+				} else {
+					await expect(hush.deposit(depositProof, depositSig)).to.be.revertedWith("HushPool: tree is full");
+				}
+			}
 		});
 	});
 });

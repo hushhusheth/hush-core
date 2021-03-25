@@ -4,10 +4,10 @@ import { zero_value } from "../zkproofs/src/utils";
 import { expect } from "chai";
 
 
-async function buildTree(hush: Contract, depth: number): Promise<MerkleTree> {
+async function buildTree(hush: Contract, _from, depth: number): Promise<MerkleTree> {
     // Read the events
     let filter = hush.filters.Deposit();
-    let res = await hush.queryFilter(filter, 0, 'latest');
+    let res = await hush.queryFilter(filter, _from, 'latest');
 
     //console.log("Number of leafs: ", res.length);
 

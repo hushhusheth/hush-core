@@ -38,10 +38,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             withdrawVerifier.address,
         );
 
+        // Setting a fee size. Probably not necessary to do.
         await execute("PoolFactory",
             { from: deployer },
             "setFeeSize",
-            50
+            25
         );
     }
 

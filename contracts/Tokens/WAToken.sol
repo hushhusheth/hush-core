@@ -194,10 +194,7 @@ contract WAToken is IWAToken, Context {
         override
         returns (uint256)
     {
-        return
-            _scaledATokens.rayMul(
-                lendingPool.getReserveNormalizedIncome(underlyingAsset)
-            );
+        return _scaledATokens.rayMul(getRatio());
     }
 
     /**
@@ -205,10 +202,16 @@ contract WAToken is IWAToken, Context {
      * @param _aTokens The aMount of aTokens
      * @return The current number of scaled aTokens
      */
-    function toScaledTokens(uint256 _aTokens) public view returns (uint256) {
-        return
-            _aTokens.rayDiv(
-                lendingPool.getReserveNormalizedIncome(underlyingAsset)
-            );
+    function toScaledTokens(uint256 _aTokens)
+        public
+        view
+        override
+        returns (uint256)
+    {
+        return _aTokens.rayDiv(getRatio());
+    }
+
+    function getRatio() public view override returns (uint256) {
+        return lendingPool.getReserveNormalizedIncome(underlyingAsset);
     }
 }

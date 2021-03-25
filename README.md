@@ -123,7 +123,7 @@ To make it as easily available for the average user, we support proof generation
 # Exporting ABI's for frontend
 
 ```bash
-npx hardhat export-artifacts --include CEther,IHush,IHushFactory,IERC20Detailed ./abis  
+npx hardhat export-artifacts --include CEther,IHush,IHushFactory,IERC20Detailed,IWAToken,AZap ./abis  
 ```
 
 

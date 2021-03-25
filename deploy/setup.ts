@@ -17,10 +17,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const { deployer: deployerSigner } = await getNamedSigners(hre);
 
-    // Just temp
-    //deployerSigner.sendTransaction;
-    await deployerSigner.sendTransaction({to: "0xD81523Da11b9A55cB1b39f08bd59319E5143A910", value: fromToken("100")});
-
     let depositAmount = fromToken("1", 18);
 
     // Wrapped token genesis

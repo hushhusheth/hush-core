@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { ADDRESSES } from "../utils/addresses";
 import { ethers } from 'hardhat';
 import { BigNumber } from '@ethersproject/bignumber';
+import { getNamedSigners } from 'hardhat-deploy-ethers/dist/src/helpers';
 
 const fromToken = (bal: string, decimals = 18) => ethers.utils.parseUnits(bal, decimals);
 const toToken = (bal: string, decimals = 18) => ethers.utils.formatUnits(bal, decimals);
@@ -14,6 +15,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, ethers, getNamedAccounts } = hre;
     const { execute, read, log } = deployments;
     const { deployer } = await getNamedAccounts();
+    const { deployer: deployerSigner } = await getNamedSigners(hre);
+
 
     type Pool = { tokenAddress: string, depositAmount: BigNumber };
     let pools: Pool[] = [
@@ -49,6 +52,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             log(`Pool for ${pool.tokenAddress} with ${pool.depositAmount} already exist at ${expectedPoolAddress}`);
         }
     }
+
 
 };
 export default func;
